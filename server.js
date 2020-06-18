@@ -30,8 +30,7 @@ const exerciseSchema = new mongoose.Schema({
 // New users schema
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
-  exercise: [exerciseSchema],
-  count: Number
+  log: [exerciseSchema]
 });
 
 const User = mongoose.model("User", userSchema);
@@ -48,7 +47,7 @@ app.post("/api/exercise/new-user", async function(req, res) {
         username: username
       });
       await user.save();
-      res.json({ username: user.username, _id: user._id });
+      res.json({ username: user.username, userId: user._id });
     }
   } catch (err) {
     console.error(err);
@@ -74,27 +73,31 @@ app.post("/api/exercise/add", async function(req, res) {
   const validDate = moment(date, "YYYY-MM-DD").isValid();
 
   if (!date) {
-    date = moment(new Date()).format("YYYY-MM-DD");
+    date = new Date();
   } else if (!validDate) {
     return res.status(400).json("Please provide date as indicated");
   }
 
   try {
     const user = await User.findById(id);
-    const exerciseCount = user.exercise.length;
-    user.exercise.push({
+    const exerciseCount = user.log.length;
+    user.log.push({
       description: description,
       duration: duration,
       date: date
     });
-    user.count = exerciseCount + 1;
     await user.save();
     res.json({
       username: user.username,
-      _id: user._id,
-      description: description,
-      duration: duration,
-      date: date
+      userId: user._id,
+      count: exerciseCount + 1,
+      log: [
+        {
+          description: description,
+          duration: duration,
+          date: date
+        }
+      ]
     });
   } catch (err) {
     console.log(err);
@@ -104,15 +107,15 @@ app.post("/api/exercise/add", async function(req, res) {
   }
 });
 
-app.get("/api/exercise/log/:userId", async function(req, res) {
-  const id = req.params.userId;
-  try {
-    const user = await User.findById(id);
-    res.json(user);
-  } catch (err) {
-    res.status(400).json("No such user in database");
-  }
-});
+// app.get("/api/exercise/log", async function(req, res) {
+//   const id = req.query.userId;
+//   try {
+//     const user = await User.findById(id);
+//     res.json(user);
+//   } catch (err) {
+//     res.status(400).json("No such user in database");
+//   }
+// });
 
 app.get("/api/exercise/log", async function(req, res) {
   const id = req.query.userId;
@@ -123,23 +126,30 @@ app.get("/api/exercise/log", async function(req, res) {
     to = new Date(req.query.to);
   }
   const limit = req.query.limit;
-  console.log(from, to, limit);
   let exercisesArray;
+  let count;
   try {
     const user = await User.findById(id);
     if (from && to && limit) {
       return res.json("Select date or limit filter");
     } else if (from && to) {
-      exercisesArray = user.exercise.filter(item => {
+      exercisesArray = user.log.filter(item => {
         let date = new Date(item.date);
-        return date >= from && date <= to});
+        return date >= from && date <= to;
+      });
     } else if (limit) {
-      exercisesArray = user.exercise.slice(0, +limit);
+      exercisesArray = user.log.slice(0, +limit);
+    } else {
+      exercisesArray = user.log;
+    }
+    if (exercisesArray) {
+      count = exercisesArray.length;
     }
     res.json({
       username: user.username,
-      _id: user._id,
-      exercise: exercisesArray
+      userId: user._id,
+      count: count,
+      log: exercisesArray
     });
   } catch (err) {
     res.status(400).json(err.message || "Internal Server Error");
