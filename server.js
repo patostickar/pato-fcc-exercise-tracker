@@ -90,14 +90,9 @@ app.post("/api/exercise/add", async function(req, res) {
     res.json({
       username: user.username,
       userId: user._id,
-      count: exerciseCount + 1,
-      log: [
-        {
-          description: description,
-          duration: duration,
-          date: date
-        }
-      ]
+      description: description,
+      duration: duration,
+      date: date
     });
   } catch (err) {
     console.log(err);
@@ -106,16 +101,6 @@ app.post("/api/exercise/add", async function(req, res) {
       .json(err.message || "Please complete the fields as specified");
   }
 });
-
-// app.get("/api/exercise/log", async function(req, res) {
-//   const id = req.query.userId;
-//   try {
-//     const user = await User.findById(id);
-//     res.json(user);
-//   } catch (err) {
-//     res.status(400).json("No such user in database");
-//   }
-// });
 
 app.get("/api/exercise/log", async function(req, res) {
   const id = req.query.userId;
