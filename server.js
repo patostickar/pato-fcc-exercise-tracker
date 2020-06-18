@@ -74,7 +74,7 @@ app.post("/api/exercise/add", async function(req, res) {
   const validDate = moment(date, "YYYY-MM-DD").isValid();
 
   if (!date) {
-    date = moment(new Date()).format("YYYY-MM-DD");
+    date = new Date()
   } else if (!validDate) {
     return res.status(400).json("Please provide date as indicated");
   }
