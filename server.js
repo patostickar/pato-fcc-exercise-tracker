@@ -47,7 +47,7 @@ app.post("/api/exercise/new-user", async function(req, res) {
         username: username
       });
       await user.save();
-      res.json({ username: user.username, userId: user._id });
+      res.json({ username: user.username, _id: user._id });
     }
   } catch (err) {
     console.error(err);
@@ -73,7 +73,7 @@ app.post("/api/exercise/add", async function(req, res) {
   const validDate = moment(date, "YYYY-MM-DD").isValid();
 
   if (!date) {
-    date = new Date();
+    date = moment().format("YYYY-MM-DD");
   } else if (!validDate) {
     return res.status(400).json("Please provide date as indicated");
   }
@@ -83,21 +83,16 @@ app.post("/api/exercise/add", async function(req, res) {
     const exerciseCount = user.log.length;
     user.log.push({
       description: description,
-      duration: duration,
+      duration: +duration,
       date: date
     });
     await user.save();
     res.json({
-      username: user.username,
       userId: user._id,
-      count: exerciseCount + 1,
-      log: [
-        {
-          description: description,
-          duration: duration,
-          date: date
-        }
-      ]
+      username: user.username,
+      description: description,
+      duration: +duration,
+      date: date
     });
   } catch (err) {
     console.log(err);
@@ -107,23 +102,13 @@ app.post("/api/exercise/add", async function(req, res) {
   }
 });
 
-// app.get("/api/exercise/log", async function(req, res) {
-//   const id = req.query.userId;
-//   try {
-//     const user = await User.findById(id);
-//     res.json(user);
-//   } catch (err) {
-//     res.status(400).json("No such user in database");
-//   }
-// });
-
 app.get("/api/exercise/log", async function(req, res) {
   const id = req.query.userId;
   let from;
   let to;
   if (req.query.from && req.query.to) {
-    from = new Date(req.query.from);
-    to = new Date(req.query.to);
+    from = moment(req.query.from).format("YYYY-MM-DD");
+    to = moment(req.query.to).format("YYYY-MM-DD");
   }
   const limit = req.query.limit;
   let exercisesArray;
@@ -134,7 +119,7 @@ app.get("/api/exercise/log", async function(req, res) {
       return res.json("Select date or limit filter");
     } else if (from && to) {
       exercisesArray = user.log.filter(item => {
-        let date = new Date(item.date);
+        let date = moment(item.date).format("YYYY-MM-DD");
         return date >= from && date <= to;
       });
     } else if (limit) {
@@ -146,8 +131,10 @@ app.get("/api/exercise/log", async function(req, res) {
       count = exercisesArray.length;
     }
     res.json({
-      username: user.username,
       userId: user._id,
+      username: user.username,
+      from: from,
+      to: to,
       count: count,
       log: exercisesArray
     });
