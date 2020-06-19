@@ -70,9 +70,11 @@ app.post("/api/exercise/add", async function(req, res) {
 
   let date = req.body.date;
   const validDate = moment(date, "YYYY-MM-DD").isValid();
-
-  if (!date) {
-    date = moment().format("YYYY-MM-DD");
+  
+  if (date) {
+    date = date.toDateString()
+  } else if (!date) {
+    date = new Date().toDateString()
   } else if (!validDate) {
     return res.status(400).json("Please provide date as indicated");
   }
@@ -91,7 +93,6 @@ app.post("/api/exercise/add", async function(req, res) {
     await user.save();
     res.json({
       userId: user._id,
-
       description: description,
       duration: +duration,
       date: date,
@@ -121,9 +122,7 @@ app.get("/api/exercise/log", async function(req, res) {
       return res.json("Select date or limit filter");
     } else if (from && to) {
       exercisesArray = user.log.filter(item => {
-
-let date = moment(item.date).format("YYYY-MM-DD");
-
+        let date = moment(item.date).format("YYYY-MM-DD");
         return date >= from && date <= to;
       });
     } else if (limit) {
