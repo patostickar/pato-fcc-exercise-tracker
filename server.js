@@ -93,8 +93,8 @@ app.post("/api/exercise/add", async function(req, res) {
     res.json({
       username: user.username,
       description: description,
-      duration: +duration,
       userId: user._id,
+      duration: +duration,
       date: date,
     });
   } catch (err) {
@@ -121,7 +121,7 @@ app.get("/api/exercise/log", async function(req, res) {
       return res.json("Select date or limit filter");
     } else if (from && to) {
       exercisesArray = user.log.filter(item => {
-        let date = new Date(item.date).toDateString();
+        let date = moment(item.date).format("YYYY-MM-DD");
         return date >= from && date <= to;
       });
     } else if (limit) {
