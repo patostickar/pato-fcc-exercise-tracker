@@ -87,13 +87,14 @@ app.post("/api/exercise/add", async function(req, res) {
       date: date
     });
     await user.save();
-    res.json({
-      userId: user._id,
-      username: user.username,
-      description: description,
-      duration: +duration,
-      date: date
-    });
+    // res.json({
+    //   userId: user._id,
+    //   username: user.username,
+    //   description: description,
+    //   duration: +duration,
+    //   date: date
+    // });
+    res.json(user)
   } catch (err) {
     console.log(err);
     res
