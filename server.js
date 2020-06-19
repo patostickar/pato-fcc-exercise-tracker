@@ -70,11 +70,9 @@ app.post("/api/exercise/add", async function(req, res) {
 
   let date = req.body.date;
   const validDate = moment(date, "YYYY-MM-DD").isValid();
-  
-  if (date) {
-    date = date.toDateString()
-  } else if (!date) {
-    date = new Date().toDateString()
+
+  if (!date) {
+    date = moment().format("YYYY-MM-DD");
   } else if (!validDate) {
     return res.status(400).json("Please provide date as indicated");
   }
@@ -93,6 +91,7 @@ app.post("/api/exercise/add", async function(req, res) {
     await user.save();
     res.json({
       userId: user._id,
+
       description: description,
       duration: +duration,
       date: date,
@@ -110,8 +109,8 @@ app.get("/api/exercise/log", async function(req, res) {
   let from;
   let to;
   if (req.query.from && req.query.to) {
-    from = new Date(req.query.from).toDateString();
-    to = new Date(req.query.to).toDateString();
+    from = moment(req.query.from).format("YYYY-MM-DD");
+    to = moment(req.query.to).format("YYYY-MM-DD");
   }
   const limit = req.query.limit;
   let exercisesArray;
@@ -122,7 +121,9 @@ app.get("/api/exercise/log", async function(req, res) {
       return res.json("Select date or limit filter");
     } else if (from && to) {
       exercisesArray = user.log.filter(item => {
-        let date = new Date(item.date).toDateString();
+
+let date = moment(item.date).format("YYYY-MM-DD");
+
         return date >= from && date <= to;
       });
     } else if (limit) {
