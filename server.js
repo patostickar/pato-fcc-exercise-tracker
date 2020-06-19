@@ -50,7 +50,6 @@ app.post("/api/exercise/new-user", async function(req, res) {
       res.json({ username: user.username, _id: user._id });
     }
   } catch (err) {
-    console.error(err);
     res.status(500).json("No username provided");
   }
 });
@@ -77,7 +76,10 @@ app.post("/api/exercise/add", async function(req, res) {
   } else if (!validDate) {
     return res.status(400).json("Please provide date as indicated");
   }
-
+  
+  if(!id || !description || !duration) {
+    return res.status(400).json("Please fill required fields");
+  }
   try {
     const user = await User.findById(id);
     const exerciseCount = user.log.length;
@@ -89,13 +91,13 @@ app.post("/api/exercise/add", async function(req, res) {
     await user.save();
     res.json({
       userId: user._id,
-      username: user.username,
+
       description: description,
       duration: +duration,
-      date: date
+      date: date,
+      username: user.username,
     });
   } catch (err) {
-    console.log(err);
     res
       .status(400)
       .json(err.message || "Please complete the fields as specified");
@@ -119,7 +121,9 @@ app.get("/api/exercise/log", async function(req, res) {
       return res.json("Select date or limit filter");
     } else if (from && to) {
       exercisesArray = user.log.filter(item => {
-        let date = moment(item.date).format("YYYY-MM-DD");
+
+let date = moment(item.date).format("YYYY-MM-DD");
+
         return date >= from && date <= to;
       });
     } else if (limit) {
