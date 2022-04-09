@@ -14,7 +14,7 @@
     "cors": "^2.8.5",
     "shortid": "^2.2.15",
     "express-healthcheck": "^0.1.0",
-    "moment": "^2.26.0"
+    "moment": "^2.29.2"
   },
   "repository": {
     "url": "https://gomix.com/#!/project/welcome-project"
